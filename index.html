@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ankit Kumar Jha | Data Science & Machine Learning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Inter:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            bg: '#05070a',
+                            card: 'rgba(12, 17, 26, 0.6)',
+                            border: '#1a2234',
+                            cyan: '#00f2fe',
+                            blue: '#4facfe',
+                            purple: '#8b5cf6',
+                            emerald: '#10b981',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 4s ease-in-out infinite',
+                        'float-slow': 'floatSlow 8s ease-in-out infinite',
+                        'scanline': 'scanline 8s linear infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '0.3', transform: 'scale(1)' },
+                            '50%': { opacity: '0.6', transform: 'scale(1.08)' }
+                        },
+                        floatSlow: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-12px)' }
+                        },
+                        scanline: {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(1000%)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --ac: #00f2fe;
+            --a2: #8b5cf6;
+        }
+
+        body {
+            background-color: #05070a;
+            color: #cbd5e1;
+            overflow-x: hidden;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+        }
+
+        /* Canvas Stacking Layer Rules */
+        #neuralCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+            background: transparent;
+            opacity: 0.85;
+            display: block;
+        }
+
+        /* Subtle vertical background grid lines */
+        .grid-lines-bg {
+            background-size: 80px 80px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #05070a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--ac);
+        }
+
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(10, 15, 25, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        /* Perspective wrapper context for cards */
+        .glass-card-wrapper {
+            perspective: 1000px;
+        }
+
+        /* SECTION 1: 3D Mouse Tilt Card Animation (Projects & Certifications) */
+        .glass-card-tilt {
+            position: relative;
+            background: rgba(12, 18, 30, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform;
+            --mouse-x: 50%;
+            --mouse-y: 50%;
+            --shadow-x: 0px;
+            --shadow-y: 10px;
+        }
+
+        /* External shadow layer behind the card */
+        .glass-card-tilt::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: transparent;
+            box-shadow: var(--shadow-x) var(--shadow-y) 30px rgba(0, 0, 0, 0.6), 
+                        var(--shadow-x) var(--shadow-y) 45px rgba(0, 242, 254, 0.12);
+            z-index: -1;
+            pointer-events: none;
+            transition: box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Animated border highlight following pointer */
+        .glass-card-tilt::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: radial-gradient(180px circle at var(--mouse-x) var(--mouse-y), rgba(0, 242, 254, 0.8), transparent 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 2;
+        }
+
+        .glass-card-tilt:hover::after {
+            opacity: 1;
+        }
+
+        /* SECTION 2: Vertical Lift & Perimeter Sweep Card Animation (All Other Sections) */
+        @property --border-angle {
+            syntax: '<angle>';
+            initial-value: 0deg;
+            inherits: false;
+        }
+
+        .glass-card-lift {
+            position: relative;
+            background: rgba(12, 18, 30, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease;
+            will-change: transform, box-shadow;
+        }
+
+        .glass-card-lift:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 
+                        0 0 20px -5px rgba(0, 242, 254, 0.25);
+            border-color: rgba(0, 242, 254, 0.3);
+        }
+
+        /* Thin outer border sweep glow on hover */
+        .glass-card-lift::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: conic-gradient(from var(--border-angle) at 50% 50%, rgba(0, 242, 254, 0.8), rgba(139, 92, 246, 0.8), transparent 60%, rgba(0, 242, 254, 0.8));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            animation: borderSweep 6s linear infinite;
+            z-index: 2;
+        }
+
+        .glass-card-lift:hover::after {
+            opacity: 1;
+        }
+
+        @keyframes borderSweep {
+            to {
+                --border-angle: 360deg;
+            }
+        }
+
+        .glow-cyan {
+            text-shadow: 0 0 16px rgba(0, 242, 254, 0.6);
+        }
+
+        /* Floating Input Labels */
+        .input-group {
+            position: relative;
+        }
+        .input-group input:focus ~ label,
+        .input-group input:not(:placeholder-shown) ~ label,
+        .input-group textarea:focus ~ label,
+        .input-group textarea:not(:placeholder-shown) ~ label {
+            transform: translateY(-24px) scale(0.85);
+            color: #00f2fe;
+        }
+
+        /* Smooth tab highlight bar */
+        .active-tab {
+            color: #00f2fe !important;
+            border-color: #00f2fe !important;
+            background: rgba(0, 242, 254, 0.05) !important;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-cyan-500/20 selection:text-cyan-300 grid-lines-bg relative">
+
+    <!-- Interactive HTML5 Canvas Background Network -->
+    <canvas id="neuralCanvas"></canvas>
+
+    <!-- Floating Background Lighting Orbs -->
+    <div class="fixed top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-cyan-600/10 to-purple-600/10 rounded-full blur-[140px] pointer-events-none z-0 animate-pulse-glow"></div>
+    <div class="fixed bottom-1/4 right-10 w-[400px] h-[400px] bg-gradient-to-br from-purple-600/10 to-blue-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
+    <!-- Sticky Glass Navigation Header -->
+    <header class="fixed top-0 left-0 w-full z-50 glass-panel border-b border-slate-800/60 transition-all duration-300">
+        <!-- Reading Progress Line -->
+        <div id="scrollProgress" class="h-[2px] bg-gradient-to-r from-cyan-400 via-purple-500 to-cyan-400 w-0 transition-all duration-150"></div>
+        
+        <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <a href="#hero" class="flex items-center gap-3.5 group">
+                <div class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700/80 flex items-center justify-center transition-all duration-300 group-hover:border-cyan-400 group-hover:shadow-[0_0_15px_rgba(0,242,254,0.3)]">
+                    <span class="font-mono text-cyan-400 font-bold text-lg">&lt;/&gt;</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-bold text-white tracking-wider font-mono text-base">ANKIT<span class="text-cyan-400">.JHA</span></span>
+                    <span class="text-[10px] text-slate-500 tracking-widest uppercase font-mono">Data Science & ML</span>
+                </div>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center space-x-1 font-mono text-xs">
+                <a href="#about" class="px-4 py-2 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-900/60 transition-all">&lt;Overview /&gt;</a>
+                <a href="#timeline" class="px-4 py-2 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-900/60 transition-all">&lt;Timeline /&gt;</a>
+                <a href="#skills" class="px-4 py-2 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-900/60 transition-all">&lt;Skills Matrix /&gt;</a>
+                <a href="#projects" class="px-4 py-2 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-900/60 transition-all">&lt;Systems Showcase /&gt;</a>
+                <a href="#certifications" class="px-4 py-2 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-900/60 transition-all">&lt;Certifications /&gt;</a>
+            </nav>
+
+            <!-- Status Indicator & Action CTA -->
+            <div class="hidden lg:flex items-center gap-4">
+                <a href="#contact" class="px-5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-cyan-400/80 text-white font-mono text-xs font-medium transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,242,254,0.25)] flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Contact Terminal</span>
+                </a>
+            </div>
+
+            <!-- Mobile Menu Trigger -->
+            <button id="mobileMenuBtn" class="md:hidden p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white" aria-label="Toggle Navigation">
+                <i class="fas fa-bars text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Drawer -->
+        <div id="mobileDrawer" class="hidden md:hidden glass-panel border-b border-slate-800/80 px-6 py-6 space-y-3 font-mono text-xs">
+            <a href="#about" class="mobile-link block px-4 py-3 rounded-xl hover:bg-slate-900 text-slate-300">&lt;Overview /&gt;</a>
+            <a href="#timeline" class="mobile-link block px-4 py-3 rounded-xl hover:bg-slate-900 text-slate-300">&lt;Timeline /&gt;</a>
+            <a href="#skills" class="mobile-link block px-4 py-3 rounded-xl hover:bg-slate-900 text-slate-300">&lt;Skills Matrix /&gt;</a>
+            <a href="#projects" class="mobile-link block px-4 py-3 rounded-xl hover:bg-slate-900 text-slate-300">&lt;Systems Showcase /&gt;</a>
+            <a href="#certifications" class="mobile-link block px-4 py-3 rounded-xl hover:bg-slate-900 text-slate-300">&lt;Certifications /&gt;</a>
+            <a href="#contact" class="mobile-link block px-4 py-3 rounded-xl hover:bg-slate-900 text-cyan-400 font-semibold">&lt;Contact Terminal /&gt;</a>
+        </div>
+    </header>
+
+    <!-- Main Vertical Page Container -->
+    <main class="relative z-10">
+
+        <!-- Hero Section -->
+        <section id="hero" class="min-h-screen pt-36 pb-24 px-6 max-w-5xl mx-auto flex flex-col justify-center items-center text-center relative">
+            
+            <!-- Floating System Badge -->
+            <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full glass-panel border border-slate-800 text-cyan-400 text-xs font-mono mb-8 shadow-2xl">
+                <i class="fas fa-user-graduate animate-pulse"></i>
+                <span class="tracking-wide">Aspiring Data Scientist & ML Engineer</span>
+            </div>
+
+            <!-- Headline -->
+            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.15] mb-8 max-w-4xl">
+                Building Practical <br/>
+                <span class="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent glow-cyan">
+                    Machine Learning Systems
+                </span>
+            </h1>
+
+            <!-- Dynamic Typewriter Subtitle -->
+            <div class="h-10 text-base sm:text-xl font-mono text-slate-400 flex items-center justify-center gap-2 mb-10">
+                <span class="text-slate-500">&gt;</span>
+                <span id="typewriter" class="text-cyan-300 font-medium border-b border-cyan-400/50 pb-0.5"></span>
+                <span class="w-2 h-5 bg-cyan-400 animate-pulse"></span>
+            </div>
+
+            <!-- Bio Narrative -->
+            <p class="max-w-2xl text-slate-400 text-base sm:text-lg leading-relaxed mb-12 font-light">
+                B.Tech Data Science student skilled in Python, machine learning, computer vision and NLP, building end-to-end ML pipelines for real-world classification problems.
+            </p>
+
+            <!-- Call to Actions -->
+            <div class="flex flex-wrap items-center justify-center gap-4 mb-16">
+                <a href="#projects" class="px-8 py-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold font-mono text-xs uppercase tracking-wider transition-all duration-300 shadow-[0_0_30px_rgba(0,242,254,0.3)] hover:scale-105 flex items-center gap-3">
+                    <i class="fas fa-folder-open"></i> Explore Projects
+                </a>
+                <button onclick="downloadResumePDF()" class="px-8 py-4 rounded-xl glass-panel border border-slate-700 hover:border-slate-500 text-slate-200 font-mono text-xs uppercase tracking-wider transition-all duration-300 flex items-center gap-3 hover:bg-slate-900/60">
+                    <i class="fas fa-file-pdf text-purple-400"></i> Download Resume PDF
+                </button>
+            </div>
+
+            <!-- Social Media Pill Grid (Lift Cards) -->
+            <div class="w-full max-w-3xl pt-12 border-t border-slate-800/60">
+                <p class="text-[11px] font-mono uppercase tracking-widest text-slate-500 mb-6">Find Me Online</p>
+                <div class="flex flex-wrap items-center justify-center gap-3">
+                    <a href="https://github.com/Ankit-Kumar-Jha-01" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 rounded-xl glass-card-lift flex items-center gap-2.5 text-xs font-mono text-slate-300 hover:text-white hover:border-cyan-400/50 group">
+                        <i class="fab fa-github text-base group-hover:text-cyan-400 transition-colors"></i>
+                        <span>GitHub</span>
+                    </a>
+                    <a href="https://huggingface.co/ankitjha07" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 rounded-xl glass-card-lift flex items-center gap-2.5 text-xs font-mono text-slate-300 hover:text-white hover:border-yellow-400/50 group">
+                        <span class="text-base group-hover:scale-110 transition-transform">🤗</span>
+                        <span>Hugging Face</span>
+                    </a>
+                    <a href="https://linkedin.com/in/ankit-kumar-jhaa" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 rounded-xl glass-card-lift flex items-center gap-2.5 text-xs font-mono text-slate-300 hover:text-white hover:border-blue-400/50 group">
+                        <i class="fab fa-linkedin-in text-base group-hover:text-blue-400 transition-colors"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="mailto:anjha8409@gmail.com" class="px-4 py-2.5 rounded-xl glass-card-lift flex items-center gap-2.5 text-xs font-mono text-slate-300 hover:text-white hover:border-emerald-400/50 group">
+                        <i class="fas fa-envelope text-base group-hover:text-emerald-400 transition-colors"></i>
+                        <span>Email</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Scroll Indicator Line -->
+            <a href="#about" class="absolute bottom-8 left-1/2 -translate-x-1/2 text-slate-600 hover:text-cyan-400 transition-colors flex flex-col items-center gap-2 font-mono text-[10px]">
+                <span>SCROLL</span>
+                <div class="w-4 h-7 rounded-full border border-slate-700 flex justify-center p-1">
+                    <div class="w-1 h-1.5 bg-cyan-400 rounded-full animate-bounce"></div>
+                </div>
+            </a>
+        </section>
+
+        <!-- Overview / About Section (Upward Lift Cards) -->
+        <section id="about" class="py-28 px-6 max-w-5xl mx-auto border-t border-slate-900">
+            <div class="space-y-16">
+                <!-- Header -->
+                <div>
+                    <div class="text-cyan-400 font-mono text-xs font-medium tracking-widest uppercase mb-3 flex items-center gap-2">
+                        <i class="fas fa-id-card"></i> Section // 01 . Executive Summary
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Data Science With a Practical Focus</h2>
+                </div>
+
+                <!-- 2 Column Overview Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                    <!-- Text Narrative -->
+                    <div class="md:col-span-7 space-y-6 text-slate-300 font-light text-base sm:text-lg leading-relaxed">
+                        <p>
+                            I am a B.Tech Data Science student (lateral entry) with a Computer Science diploma. I build end-to-end machine learning pipelines in Python, from feature engineering and model evaluation to computer vision and NLP models.
+                        </p>
+                        <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+                            I am looking for Data Science and ML roles where I can apply this hands-on experience to real business and classification problems.
+                        </p>
+                    </div>
+
+                    <!-- Highlight Stats Grid -->
+                    <div class="md:col-span-5 space-y-4">
+                        <div class="glass-card-lift p-6 rounded-2xl flex items-center gap-5 border-l-4 border-l-cyan-400">
+                            <div class="text-3xl font-mono font-bold text-white">50K</div>
+                            <div>
+                                <div class="text-xs font-mono text-cyan-400">Booking Records Modelled</div>
+                                <div class="text-[11px] text-slate-500">British Airways job simulation (Forage)</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card-lift p-6 rounded-2xl flex items-center gap-5 border-l-4 border-l-purple-500">
+                            <div class="text-3xl font-mono font-bold text-white">0.79</div>
+                            <div>
+                                <div class="text-xs font-mono text-purple-400">Test ROC-AUC</div>
+                                <div class="text-[11px] text-slate-500">Random Forest booking classifier</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card-lift p-6 rounded-2xl flex items-center gap-5 border-l-4 border-l-emerald-400">
+                            <div class="text-3xl font-mono font-bold text-white">68%</div>
+                            <div>
+                                <div class="text-xs font-mono text-emerald-400">Recall After Threshold Tuning</div>
+                                <div class="text-[11px] text-slate-500">Up from 16% at the default 0.50 threshold</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Vertical Timeline Section (Upward Lift Cards) -->
+        <section id="timeline" class="py-28 px-6 max-w-5xl mx-auto border-t border-slate-900">
+            <div class="space-y-12">
+                <!-- Section Header with filter buttons -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-800/80 pb-8">
+                    <div>
+                        <div class="text-purple-400 font-mono text-xs font-medium tracking-widest uppercase mb-3 flex items-center gap-2">
+                            <i class="fas fa-timeline"></i> Section // 02 . Career Trajectory
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Experience & Academic Path</h2>
+                    </div>
+
+                    <!-- Timeline Category Toggles -->
+                    <div class="flex items-center gap-2 font-mono text-xs bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+                        <button onclick="filterTimeline('all')" id="tl-btn-all" class="tl-filter-btn px-4 py-2 rounded-lg text-cyan-400 bg-slate-800 font-semibold transition-all">All History</button>
+                        <button onclick="filterTimeline('work')" id="tl-btn-work" class="tl-filter-btn px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all">Experience</button>
+                        <button onclick="filterTimeline('edu')" id="tl-btn-edu" class="tl-filter-btn px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all">Education</button>
+                    </div>
+                </div>
+
+                <!-- Vertical Line Spine Container -->
+                <div class="relative pl-6 sm:pl-10 space-y-12 before:content-[''] before:absolute before:left-2.5 sm:before:left-3.5 before:top-3 before:bottom-3 before:w-[2px] before:bg-gradient-to-b before:from-cyan-400 before:via-purple-500 before:to-slate-800">
+
+                    <!-- Timeline Item 1 -->
+                    <div class="tl-item relative group" data-category="work">
+                        <div class="absolute -left-[29px] sm:-left-[37px] top-1.5 w-6 h-6 rounded-full bg-slate-950 border-2 border-cyan-400 flex items-center justify-center text-cyan-400 text-[10px] group-hover:scale-125 transition-transform shadow-[0_0_12px_rgba(0,242,254,0.5)] z-20">
+                            <i class="fas fa-plane"></i>
+                        </div>
+                        <div class="glass-card-lift p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-4">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Data Science Job Simulation</h3>
+                                    <div class="text-xs font-mono text-cyan-400 mt-0.5">British Airways • Forage</div>
+                                </div>
+                                <span class="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-xs">August 2026</span>
+                            </div>
+                            <p class="text-sm text-slate-300 font-light leading-relaxed">
+                                Built a Random Forest classifier on 50,000 customer booking records to predict booking behaviour. Used a leakage-safe pipeline with target encoding and 5-fold stratified cross-validation; reached 0.79 test ROC-AUC and 68.2% recall after lowering the threshold to 0.20.
+                            </p>
+                            <div class="flex flex-wrap gap-2 pt-2 font-mono text-[11px]">
+                                <span class="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400">Pandas</span>
+                                <span class="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400">Scikit-learn</span>
+                                <span class="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400">Random Forest</span>
+                                <span class="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400">Target Encoding</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Item 2 -->
+                    <div class="tl-item relative group" data-category="work">
+                        <div class="absolute -left-[29px] sm:-left-[37px] top-1.5 w-6 h-6 rounded-full bg-slate-950 border-2 border-purple-400 flex items-center justify-center text-purple-400 text-[10px] group-hover:scale-125 transition-transform shadow-[0_0_12px_rgba(139,92,246,0.5)] z-20">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <div class="glass-card-lift p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-4">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Data Science Internship</h3>
+                                    <div class="text-xs font-mono text-purple-400 mt-0.5">NIELIT • 4-Week Program</div>
+                                </div>
+                                <span class="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 font-mono text-xs">2024</span>
+                            </div>
+                            <p class="text-sm text-slate-300 font-light leading-relaxed">
+                                Completed a 4-week Data Science internship using Python, covering OOP, NumPy, Pandas and machine learning models.
+                            </p>
+                            <div class="flex flex-wrap gap-2 pt-2 font-mono text-[11px]">
+                                <span class="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400">Python</span>
+                                <span class="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400">NumPy</span>
+                                <span class="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400">Pandas</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Item 3 (Education) -->
+                    <div class="tl-item relative group" data-category="edu">
+                        <div class="absolute -left-[29px] sm:-left-[37px] top-1.5 w-6 h-6 rounded-full bg-slate-950 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 text-[10px] group-hover:scale-125 transition-transform shadow-[0_0_12px_rgba(16,185,129,0.5)] z-20">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="glass-card-lift p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-4">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">B.Tech in Data Science (Lateral Entry)</h3>
+                                    <div class="text-xs font-mono text-emerald-400 mt-0.5">Noida Institute of Engineering and Technology, Greater Noida</div>
+                                </div>
+                                <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono text-xs">2024 — 2027</span>
+                            </div>
+                            <p class="text-sm text-slate-300 font-light leading-relaxed">
+                                Building on my diploma with a focus on Data Science and machine learning, with hands-on projects in computer vision and NLP.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Item 4 (Education) -->
+                    <div class="tl-item relative group" data-category="edu">
+                        <div class="absolute -left-[29px] sm:-left-[37px] top-1.5 w-6 h-6 rounded-full bg-slate-950 border-2 border-blue-400 flex items-center justify-center text-blue-400 text-[10px] group-hover:scale-125 transition-transform shadow-[0_0_12px_rgba(59,130,246,0.5)] z-20">
+                            <i class="fas fa-scroll"></i>
+                        </div>
+                        <div class="glass-card-lift p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-4">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Diploma in Computer Science & Engineering</h3>
+                                    <div class="text-xs font-mono text-blue-400 mt-0.5">Central Institute of Technology, Kokrajhar • CGPA 8.29</div>
+                                </div>
+                                <span class="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 font-mono text-xs">2021 — 2024</span>
+                            </div>
+                            <p class="text-sm text-slate-300 font-light leading-relaxed">
+                                Completed a 3-year diploma in Computer Science and Engineering, and started ML work with the traffic sign detection major project.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Matrix Section (Upward Lift Cards) -->
+        <section id="skills" class="py-28 px-6 max-w-5xl mx-auto border-t border-slate-900">
+            <div class="space-y-12">
+                <div>
+                    <div class="text-emerald-400 font-mono text-xs font-medium tracking-widest uppercase mb-3 flex items-center gap-2">
+                        <i class="fas fa-toolbox"></i> Section // 03 . Tech Stack & Competencies
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Interactive Skills & Stack Matrix</h2>
+                </div>
+
+                <!-- Skill Categories Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    <!-- Core AI & LLMs -->
+                    <div class="glass-card-lift p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-6">
+                        <div class="flex items-center gap-3 border-b border-slate-800 pb-4">
+                            <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-lg">
+                                <i class="fas fa-language"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">NLP & Transformers</h3>
+                                <p class="text-xs font-mono text-slate-500">Text Models & Fine-Tuning</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-5 font-mono text-xs">
+                            <div>
+                                <div class="flex justify-between mb-2"><span class="text-slate-300">Hugging Face Transformers & DistilBERT</span><span class="text-cyan-400">MCA Project</span></div>
+                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800"><div class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full" style="width: 80%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2"><span class="text-slate-300">NLP using Python</span><span class="text-cyan-400">Infosys Cert.</span></div>
+                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800"><div class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full" style="width: 75%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2"><span class="text-slate-300">Text Augmentation (nlpaug)</span><span class="text-cyan-400">MCA Project</span></div>
+                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800"><div class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full" style="width: 70%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Computer Vision & ML -->
+                    <div class="glass-card-lift p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-6">
+                        <div class="flex items-center gap-3 border-b border-slate-800 pb-4">
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 text-lg">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Computer Vision & Core ML</h3>
+                                <p class="text-xs font-mono text-slate-500">Visual Perception & Classical ML</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-5 font-mono text-xs">
+                            <div>
+                                <div class="flex justify-between mb-2"><span class="text-slate-300">Object Detection (YOLOv8)</span><span class="text-purple-400">Traffic Signs</span></div>
+                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800"><div class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full" style="width: 80%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2"><span class="text-slate-300">CNNs & Image Augmentation</span><span class="text-purple-400">Traffic Signs</span></div>
+                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800"><div class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full" style="width: 75%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2"><span class="text-slate-300">Random Forest & Scikit-learn</span><span class="text-purple-400">BA Simulation</span></div>
+                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800"><div class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full" style="width: 80%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MLOps & Infrastructure -->
+                    <div class="glass-card-lift p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-6">
+                        <div class="flex items-center gap-3 border-b border-slate-800 pb-4">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-lg">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Data Analysis & Evaluation</h3>
+                                <p class="text-xs font-mono text-slate-500">EDA, Statistics & Metrics</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-5 font-mono text-xs">
+                            <div>
+                                <div class="flex justify-between mb-2"><span class="text-slate-300">Pandas & NumPy</span><span class="text-emerald-400">Internship</span></div>
+                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800"><div class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" style="width: 80%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2"><span class="text-slate-300">Feature Engineering & EDA</span><span class="text-emerald-400">BA Simulation</span></div>
+                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800"><div class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" style="width: 80%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2"><span class="text-slate-300">Cross-Validation & Model Evaluation</span><span class="text-emerald-400">BA Simulation</span></div>
+                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800"><div class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" style="width: 75%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Languages & Frameworks -->
+                    <div class="glass-card-lift p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-6">
+                        <div class="flex items-center gap-3 border-b border-slate-800 pb-4">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-lg">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Languages & Web Basics</h3>
+                                <p class="text-xs font-mono text-slate-500">Software Engineering Stack</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-5 font-mono text-xs">
+                            <div>
+                                <div class="flex justify-between mb-2"><span class="text-slate-300">Python (NumPy, Pandas, Scikit-learn)</span><span class="text-blue-400">Primary</span></div>
+                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800"><div class="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full" style="width: 85%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2"><span class="text-slate-300">SQL & Java</span><span class="text-blue-400">Working</span></div>
+                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800"><div class="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full" style="width: 65%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2"><span class="text-slate-300">HTML, CSS, JavaScript & Django</span><span class="text-blue-400">Working</span></div>
+                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800"><div class="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full" style="width: 60%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Systems & Projects Showcase Section (Maintained 3D Tilt Cards) -->
+        <section id="projects" class="py-28 px-6 max-w-5xl mx-auto border-t border-slate-900">
+            <div class="space-y-12">
+                
+                <!-- Section Header with Filters -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-800/80 pb-8">
+                    <div>
+                        <div class="text-cyan-400 font-mono text-xs font-medium tracking-widest uppercase mb-3 flex items-center gap-2">
+                            <i class="fas fa-diagram-project"></i> Section // 04 . Hands-On ML Projects
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Featured ML Projects</h2>
+                    </div>
+
+                    <!-- Category Filters -->
+                    <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+                        <button onclick="filterProjects('all')" class="proj-filter-btn px-4 py-2 rounded-xl glass-panel text-cyan-400 border-cyan-500/40 bg-slate-900">All</button>
+                        <button onclick="filterProjects('llm')" class="proj-filter-btn px-4 py-2 rounded-xl glass-panel text-slate-400 hover:text-white">NLP</button>
+                        <button onclick="filterProjects('cv')" class="proj-filter-btn px-4 py-2 rounded-xl glass-panel text-slate-400 hover:text-white">Computer Vision</button>
+                        <button onclick="filterProjects('mlops')" class="proj-filter-btn px-4 py-2 rounded-xl glass-panel text-slate-400 hover:text-white">Machine Learning</button>
+                    </div>
+                </div>
+
+                <!-- Vertically Stacked Project Cards -->
+                <div class="space-y-8 glass-card-wrapper">
+                    
+                    <!-- Project 1 (3D Tilt Effect) -->
+                    <div class="project-item glass-card-tilt rounded-2xl p-6 sm:p-8 space-y-6 border border-slate-800/80" data-category="llm">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-2xl">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">MCA eConsultation Sentiment Analysis</h3>
+                                    <p class="text-xs font-mono text-cyan-400 mt-1">DistilBERT Sentiment Classifier</p>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-300 font-mono text-xs border border-cyan-500/20 w-fit">NLP</span>
+                        </div>
+
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed font-light">
+                            Prototype NLP model that classifies eConsultation comments as positive, negative or neutral. Fine-tunes DistilBERT with the Hugging Face Trainer and uses nlpaug text augmentation (synonym, insertion, swap, deletion) for a more robust model.
+                        </p>
+
+                        <!-- Tech Stack Tags -->
+                        <div class="flex flex-wrap gap-2 font-mono text-xs">
+                            <span class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-cyan-300">DistilBERT</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-purple-300">PyTorch</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-emerald-300">nlpaug</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">Hugging Face</span>
+                        </div>
+
+                        <!-- Action Bar -->
+                        <div class="flex flex-wrap items-center justify-between pt-4 border-t border-slate-800/60 font-mono text-xs gap-4">
+                            <button onclick="openCodeTerminal('DistilBERT Fine-Tuning Setup', 'python', `# DistilBERT sentiment classifier (positive / negative / neutral)
+from transformers import (AutoTokenizer,
+    AutoModelForSequenceClassification, Trainer)
+
+tok = AutoTokenizer.from_pretrained('distilbert-base-uncased')
+model = AutoModelForSequenceClassification.from_pretrained(
+    'distilbert-base-uncased', num_labels=3)
+
+# nlpaug augmentation -> tokenize -> fine-tune with Trainer
+trainer = Trainer(model=model, args=training_args,
+                  train_dataset=train_ds, eval_dataset=val_ds)
+trainer.train()
+`)" class="text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-2">
+                                <i class="fas fa-sliders text-cyan-400"></i> View Fine-Tuning Snippet
+                            </button>
+
+                            <div class="flex items-center gap-4">
+                                <a href="https://huggingface.co/ankitjha07" target="_blank" class="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-yellow-400/50 text-slate-300 hover:text-white transition-all flex items-center gap-2">
+                                    <span>🤗 Hugging Face</span>
+                                </a>
+                                <a href="https://github.com/Ankit-Kumar-Jha-01/NLP-model-for-MCA-eConsultation-Sentiment-Analysis" target="_blank" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold transition-all flex items-center gap-2">
+                                    <i class="fab fa-github"></i> <span>GitHub Repository</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 2 (3D Tilt Effect) -->
+                    <div class="project-item glass-card-tilt rounded-2xl p-6 sm:p-8 space-y-6 border border-slate-800/80" data-category="cv">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 text-2xl">
+                                    <i class="fas fa-traffic-light"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">Traffic Sign Detection in Harsh Conditions</h3>
+                                    <p class="text-xs font-mono text-purple-400 mt-1">YOLOv8 Object Detection</p>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 rounded-full bg-purple-500/10 text-purple-300 font-mono text-xs border border-purple-500/20 w-fit">Computer Vision</span>
+                        </div>
+
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed font-light">
+                            Fine-tuned YOLOv8s to detect traffic signs. Adding fog, rain, blur, low-light and occlusion images (Albumentations) raised mAP50 from 0.665 to 0.694; a larger 61-class dataset later reached 0.892.
+                        </p>
+
+                        <!-- Tech Stack Tags -->
+                        <div class="flex flex-wrap gap-2 font-mono text-xs">
+                            <span class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-purple-300">YOLOv8</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-blue-300">Ultralytics</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-emerald-300">Albumentations</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">Google Colab</span>
+                        </div>
+
+                        <!-- Action Bar -->
+                        <div class="flex flex-wrap items-center justify-between pt-4 border-t border-slate-800/60 font-mono text-xs gap-4">
+                            <button onclick="openCodeTerminal('YOLOv8 Training Setup', 'python', `# Fine-tune YOLOv8s on the traffic sign dataset
+from ultralytics import YOLO
+
+model = YOLO('yolov8s.pt')
+model.train(data='Custom_data.yaml', epochs=100, imgsz=640,
+            batch=16, patience=20, seed=42)
+model.val()
+`)" class="text-slate-400 hover:text-purple-400 transition-colors flex items-center gap-2">
+                                <i class="fas fa-gears text-purple-400"></i> View Training Setup
+                            </button>
+
+                            <div class="flex items-center gap-4">
+                                <a href="https://github.com/Ankit-Kumar-Jha-01/Traffic-sign-detection-in-harsh-conditions" target="_blank" class="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-purple-400/50 text-slate-300 hover:text-white transition-all flex items-center gap-2">
+                                    <i class="fab fa-github"></i> <span>GitHub Code</span>
+                                </a>
+                                <a href="https://huggingface.co/ankitjha07" target="_blank" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold transition-all flex items-center gap-2">
+                                    <span>🤗</span> <span>Hugging Face</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 3 (3D Tilt Effect) -->
+                    <div class="project-item glass-card-tilt rounded-2xl p-6 sm:p-8 space-y-6 border border-slate-800/80" data-category="mlops">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-2xl">
+                                    <i class="fas fa-ticket"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">BA Customer Booking Prediction</h3>
+                                    <p class="text-xs font-mono text-emerald-400 mt-1">Random Forest Booking Classifier</p>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 font-mono text-xs border border-emerald-500/20 w-fit">Machine Learning</span>
+                        </div>
+
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed font-light">
+                            Random Forest model that predicts customer booking behaviour from 50,000 records with 5 engineered features and target encoding. Reached 0.79 test ROC-AUC; a 0.20 threshold lifted recall from 16% to 68.2%.
+                        </p>
+
+                        <!-- Tech Stack Tags -->
+                        <div class="flex flex-wrap gap-2 font-mono text-xs">
+                            <span class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-emerald-300">Scikit-learn</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-cyan-300">Pandas</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-blue-300">category_encoders</span>
+                            <span class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">Seaborn</span>
+                        </div>
+
+                        <!-- Action Bar -->
+                        <div class="flex flex-wrap items-center justify-between pt-4 border-t border-slate-800/60 font-mono text-xs gap-4">
+                            <button onclick="openCodeTerminal('Booking Prediction Pipeline', 'python', `# Leakage-safe pipeline: target encoding + Random Forest
+from category_encoders import TargetEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+
+pre = ColumnTransformer([('te', TargetEncoder(),
+                          ['route', 'booking_origin'])],
+                        remainder='passthrough')
+pipe = Pipeline([('pre', pre), ('rf', RandomForestClassifier())])
+
+# Lower decision threshold (0.50 -> 0.20) to raise recall
+pred = pipe.predict_proba(X_test)[:, 1] >= 0.20
+`)" class="text-slate-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
+                                <i class="fas fa-code-merge text-emerald-400"></i> View Pipeline Snippet
+                            </button>
+
+                            <div class="flex items-center gap-4">
+                                <a href="https://github.com/Ankit-Kumar-Jha-01/British_Airways-Job_Simulation-Data_Science" target="_blank" class="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-400/50 text-slate-300 hover:text-white transition-all flex items-center gap-2">
+                                    <i class="fab fa-github"></i> <span>GitHub Code</span>
+                                </a>
+                                <a href="https://github.com/Ankit-Kumar-Jha-01" target="_blank" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all flex items-center gap-2">
+                                    <i class="fas fa-book-bookmark"></i> <span>All Repositories</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Certifications & Verification Section (Maintained 3D Tilt Cards) -->
+        <section id="certifications" class="py-28 px-6 max-w-5xl mx-auto border-t border-slate-900">
+            <div class="space-y-12">
+                <div>
+                    <div class="text-purple-400 font-mono text-xs font-medium tracking-widest uppercase mb-3 flex items-center gap-2">
+                        <i class="fas fa-certificate"></i> Section // 05 . Industry Credentials
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Verified Certifications</h2>
+                </div>
+
+                <!-- Vertically Spaced Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 glass-card-wrapper">
+                    
+                    <!-- Cert 1 (3D Tilt Effect) -->
+                    <div onclick="openCertModal('Probability & Statistics using Python; NLP using Python', 'Infosys Springboard', '2026', 'Not listed', '#')" class="glass-card-tilt p-6 rounded-2xl cursor-pointer group border border-slate-800 hover:border-cyan-400/50 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fas fa-square-root-variable"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-base">Probability, Statistics & NLP</h3>
+                                <p class="text-xs font-mono text-slate-500">Infosys Springboard</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-slate-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all"></i>
+                    </div>
+
+                    <!-- Cert 2 (3D Tilt Effect) -->
+                    <div onclick="openCertModal('Big Data - 201', 'Infosys Springboard', '2026', 'Not listed', '#')" class="glass-card-tilt p-6 rounded-2xl cursor-pointer group border border-slate-800 hover:border-amber-400/50 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-base">Big Data - 201</h3>
+                                <p class="text-xs font-mono text-slate-500">Infosys Springboard</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-slate-600 group-hover:text-amber-400 group-hover:translate-x-1 transition-all"></i>
+                    </div>
+
+                    <!-- Cert 3 (3D Tilt Effect) -->
+                    <div onclick="openCertModal('Data Science Certificate (4-Week Internship)', 'NIELIT', '2024', 'Not listed', '#')" class="glass-card-tilt p-6 rounded-2xl cursor-pointer group border border-slate-800 hover:border-purple-400/50 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-base">Data Science Certificate</h3>
+                                <p class="text-xs font-mono text-slate-500">NIELIT</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-slate-600 group-hover:text-purple-400 group-hover:translate-x-1 transition-all"></i>
+                    </div>
+
+                    <!-- Cert 4 (3D Tilt Effect) -->
+                    <div onclick="openCertModal('British Airways Data Science Job Simulation', 'Forage', 'August 2026', 'Not listed', '#')" class="glass-card-tilt p-6 rounded-2xl cursor-pointer group border border-slate-800 hover:border-yellow-400/50 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center text-yellow-400 text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fas fa-plane-departure"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-base">BA Data Science Simulation</h3>
+                                <p class="text-xs font-mono text-slate-500">Forage</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-slate-600 group-hover:text-yellow-400 group-hover:translate-x-1 transition-all"></i>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Terminal Section (Upward Lift Card) -->
+        <section id="contact" class="py-28 px-6 max-w-4xl mx-auto border-t border-slate-900">
+            <div class="glass-card-lift p-8 sm:p-12 rounded-3xl border border-slate-800 space-y-8">
+                
+                <div class="text-center space-y-3">
+                    <div class="text-cyan-400 font-mono text-xs font-medium tracking-widest uppercase flex items-center justify-center gap-2">
+                        <i class="fas fa-envelope-open-text"></i> Section // 06 . Connection Request
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Let's Work Together</h2>
+                    <p class="text-slate-400 text-sm max-w-md mx-auto font-light leading-relaxed">
+                        Open to Data Science and ML roles, internships and collaborations. Send a message below, or email <a href="mailto:anjha8409@gmail.com" class="text-cyan-400 hover:underline">anjha8409@gmail.com</a>.
+                    </p>
+                </div>
+
+                <!-- Form -->
+                <form id="contactForm" onsubmit="handleContactSubmit(event)" class="space-y-6 max-w-xl mx-auto">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="input-group">
+                            <input type="text" id="contactName" required placeholder=" " class="w-full px-4 py-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-white focus:outline-none focus:border-cyan-400 font-mono text-xs transition-colors">
+                            <label for="contactName" class="absolute left-4 top-3.5 text-xs font-mono text-slate-500 pointer-events-none transition-all duration-200">Sender Identity / Name</label>
+                        </div>
+
+                        <div class="input-group">
+                            <input type="email" id="contactEmail" required placeholder=" " class="w-full px-4 py-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-white focus:outline-none focus:border-cyan-400 font-mono text-xs transition-colors">
+                            <label for="contactEmail" class="absolute left-4 top-3.5 text-xs font-mono text-slate-500 pointer-events-none transition-all duration-200">Email Address Endpoint</label>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <textarea id="contactMessage" rows="5" required placeholder=" " class="w-full px-4 py-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-white focus:outline-none focus:border-cyan-400 font-mono text-xs transition-colors resize-none"></textarea>
+                        <label for="contactMessage" class="absolute left-4 top-3.5 text-xs font-mono text-slate-500 pointer-events-none transition-all duration-200">Transmission Payload / Requirements...</label>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 text-slate-950 font-bold font-mono text-xs uppercase tracking-wider hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(0,242,254,0.25)]">
+                        <span>Execute Transmission</span> <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 py-12 px-6 text-center font-mono text-xs text-slate-600 relative z-10">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>&copy; 2026 Ankit Kumar Jha. All rights reserved.</p>
+            <div class="flex items-center gap-4 text-slate-500">
+                <a href="#hero" class="hover:text-cyan-400 transition-colors">Back to Top <i class="fas fa-arrow-up ml-1"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Certificate Modal -->
+    <div id="certModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden p-4">
+        <div class="glass-panel max-w-md w-full rounded-2xl p-6 relative border border-cyan-500/40 shadow-2xl">
+            <button onclick="closeCertModal()" class="absolute top-4 right-4 text-slate-500 hover:text-white text-lg">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="text-center space-y-4">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-2xl">
+                    <i class="fas fa-award"></i>
+                </div>
+                <h3 id="modalTitle" class="text-xl font-bold text-white">Probability & Statistics using Python; NLP using Python</h3>
+                <p id="modalIssuer" class="text-xs font-mono text-cyan-400">Issued by Infosys Springboard</p>
+                <div class="bg-slate-950/80 p-4 rounded-xl text-left space-y-2 font-mono text-xs text-slate-300 border border-slate-800">
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Validity:</span>
+                        <span id="modalValidity">2026</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Credential ID:</span>
+                        <span id="modalID" class="text-cyan-300">Not listed</span>
+                    </div>
+                </div>
+                <a id="modalLink" href="#" target="_blank" class="block w-full py-3 rounded-xl bg-cyan-500 text-slate-950 font-mono text-xs font-bold hover:bg-cyan-400 transition-colors">
+                    Verify Digital Badge <i class="fas fa-external-link-alt ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code Preview Modal -->
+    <div id="codeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden p-4">
+        <div class="glass-panel max-w-2xl w-full rounded-2xl p-6 relative border border-slate-800 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 id="codeModalTitle" class="text-base font-mono font-bold text-cyan-400">Architecture Snippet</h3>
+                <button onclick="closeCodeModal()" class="text-slate-500 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <pre class="bg-slate-950 p-4 rounded-xl text-xs font-mono text-slate-300 overflow-x-auto border border-slate-800 leading-relaxed"><code id="codeModalContent"></code></pre>
+            <div class="flex justify-end">
+                <button onclick="copyCodeSnippet()" class="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-300 hover:text-cyan-400 transition-colors">
+                    <i class="fas fa-copy"></i> Copy Code
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Overlay -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-xl glass-panel border border-cyan-500/50 text-cyan-300 font-mono text-xs flex items-center gap-3 shadow-2xl opacity-0 pointer-events-none transition-all duration-300">
+        <i class="fas fa-info-circle text-cyan-400"></i>
+        <span id="toastMsg">Action executed successfully</span>
+    </div>
+
+    <script>
+        /* 1. Interactive HTML5 Canvas Particle Network Background */
+        (function initNeuralCanvas() {
+            const canvas = document.getElementById('neuralCanvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let mouse = { x: null, y: null, radius: 170 };
+            let animationFrameId = null;
+            let dpr = window.devicePixelRatio || 1;
+
+            // Extract primary and secondary colors dynamically from CSS variables --ac & --a2
+            function getThemeColors() {
+                const style = getComputedStyle(document.documentElement);
+                const primaryHex = style.getPropertyValue('--ac').trim() || '#00f2fe';
+                const secondaryHex = style.getPropertyValue('--a2').trim() || '#8b5cf6';
+
+                function parseHex(hex) {
+                    let clean = hex.replace('#', '');
+                    if (clean.length === 3) clean = clean.split('').map(c => c + c).join('');
+                    const num = parseInt(clean, 16);
+                    if (isNaN(num)) return { r: 0, g: 242, b: 254 };
+                    return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+                }
+
+                return {
+                    primary: parseHex(primaryHex),
+                    secondary: parseHex(secondaryHex)
+                };
+            }
+
+            let themeColors = getThemeColors();
+
+            function resizeCanvas() {
+                dpr = window.devicePixelRatio || 1;
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                canvas.style.width = width + 'px';
+                canvas.style.height = height + 'px';
+
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.scale(dpr, dpr);
+
+                themeColors = getThemeColors();
+                buildParticles();
+            }
+
+            function updatePointerPosition(x, y) {
+                mouse.x = x;
+                mouse.y = y;
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            window.addEventListener('mousemove', (e) => updatePointerPosition(e.clientX, e.clientY));
+            window.addEventListener('mouseleave', () => updatePointerPosition(null, null));
+
+            window.addEventListener('touchmove', (e) => {
+                if (e.touches.length > 0) {
+                    updatePointerPosition(e.touches[0].clientX, e.touches[0].clientY);
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchend', () => updatePointerPosition(null, null));
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * window.innerWidth;
+                    this.y = Math.random() * window.innerHeight;
+                    this.size = Math.random() * 2 + 1.2;
+                    this.vx = (Math.random() - 0.5) * 0.7;
+                    this.vy = (Math.random() - 0.5) * 0.7;
+                    this.color = Math.random() > 0.4 ? themeColors.primary : themeColors.secondary;
+                }
+
+                draw() {
+                    ctx.fillStyle = `rgb(${this.color.r}, ${this.color.g}, ${this.color.b})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                update(reducedMotion) {
+                    // Continuous wandering movement
+                    if (!reducedMotion) {
+                        this.x += this.vx;
+                        this.y += this.vy;
+
+                        if (this.x < 0 || this.x > window.innerWidth) this.vx *= -1;
+                        if (this.y < 0 || this.y > window.innerHeight) this.vy *= -1;
+                    }
+
+                    // Magnetic interaction with mouse or touch
+                    if (mouse.x !== null && mouse.y !== null) {
+                        let dx = mouse.x - this.x;
+                        let dy = mouse.y - this.y;
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < mouse.radius) {
+                            let force = (mouse.radius - dist) / mouse.radius;
+                            let attractionStrength = 0.035;
+                            this.x += dx * force * attractionStrength;
+                            this.y += dy * force * attractionStrength;
+                        }
+                    }
+                }
+            }
+
+            function buildParticles() {
+                particles = [];
+                // Adaptive count scaling based on screen dimensions
+                const area = window.innerWidth * window.innerHeight;
+                const density = window.innerWidth < 768 ? 20000 : 14000;
+                const count = Math.min(Math.max(Math.floor(area / density), 35), 110);
+
+                for (let i = 0; i < count; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function connectNetwork() {
+                const maxDistance = 125;
+                const pointerMaxDistance = 160;
+
+                for (let a = 0; a < particles.length; a++) {
+                    // Particle-to-particle line connections
+                    for (let b = a + 1; b < particles.length; b++) {
+                        let dx = particles[a].x - particles[b].x;
+                        let dy = particles[a].y - particles[b].y;
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < maxDistance) {
+                            let alpha = (1 - dist / maxDistance) * 0.35;
+                            let c = particles[a].color;
+                            ctx.strokeStyle = `rgba(${c.r}, ${c.g}, ${c.b}, ${alpha})`;
+                            ctx.lineWidth = 0.75;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[a].x, particles[a].y);
+                            ctx.lineTo(particles[b].x, particles[b].y);
+                            ctx.stroke();
+                        }
+                    }
+
+                    // Direct line connection to mouse pointer
+                    if (mouse.x !== null && mouse.y !== null) {
+                        let pdx = particles[a].x - mouse.x;
+                        let pdy = particles[a].y - mouse.y;
+                        let pdist = Math.sqrt(pdx * pdx + pdy * pdy);
+
+                        if (pdist < pointerMaxDistance) {
+                            let pAlpha = (1 - pdist / pointerMaxDistance) * 0.55;
+                            let c = themeColors.primary;
+                            ctx.strokeStyle = `rgba(${c.r}, ${c.g}, ${c.b}, ${pAlpha})`;
+                            ctx.lineWidth = 1.0;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[a].x, particles[a].y);
+                            ctx.lineTo(mouse.x, mouse.y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function renderLoop() {
+                ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+                const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+                particles.forEach(p => {
+                    p.update(reducedMotion);
+                    p.draw();
+                });
+                connectNetwork();
+                animationFrameId = requestAnimationFrame(renderLoop);
+            }
+
+            // Initialize rendering immediately
+            resizeCanvas();
+            renderLoop();
+        })();
+
+        /* 2. Card 3D Tilt Effect (Projects & Certifications Only) */
+        function initCardTiltEffect() {
+            const cards = document.querySelectorAll('.glass-card-tilt');
+
+            cards.forEach(card => {
+                let tiltFrameId = null;
+
+                card.addEventListener('mousemove', (e) => {
+                    if (tiltFrameId) cancelAnimationFrame(tiltFrameId);
+
+                    tiltFrameId = requestAnimationFrame(() => {
+                        const rect = card.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+
+                        // Calculate tilt rotation (Max tilt ~12 deg)
+                        const rotateX = -((y - centerY) / centerY) * 12;
+                        const rotateY = ((x - centerX) / centerX) * 12;
+
+                        // Dynamic shadow offset in opposite direction of tilt
+                        const shadowX = -((x - centerX) / centerX) * 20;
+                        const shadowY = -((y - centerY) / centerY) * 20 + 15;
+
+                        // Outer border highlight position tracking
+                        const mouseXPercent = (x / rect.width) * 100;
+                        const mouseYPercent = (y / rect.height) * 100;
+
+                        card.style.transform = `rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateZ(10px)`;
+                        card.style.setProperty('--shadow-x', `${shadowX.toFixed(2)}px`);
+                        card.style.setProperty('--shadow-y', `${shadowY.toFixed(2)}px`);
+                        card.style.setProperty('--mouse-x', `${mouseXPercent.toFixed(2)}%`);
+                        card.style.setProperty('--mouse-y', `${mouseYPercent.toFixed(2)}%`);
+                    });
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    if (tiltFrameId) cancelAnimationFrame(tiltFrameId);
+                    
+                    // Smoothly reset tilt, shadow offset, and border highlight position
+                    card.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0px)';
+                    card.style.setProperty('--shadow-x', '0px');
+                    card.style.setProperty('--shadow-y', '10px');
+                    card.style.setProperty('--mouse-x', '50%');
+                    card.style.setProperty('--mouse-y', '50%');
+                });
+            });
+        }
+
+        /* Typewriter Animation */
+        const typewriterEl = document.getElementById('typewriter');
+        const phrases = [
+            'Machine Learning & Classification Models',
+            'Computer Vision with YOLOv8',
+            'NLP with DistilBERT & Transformers',
+            'Data Science with Python'
+        ];
+        let pIdx = 0, cIdx = 0, isDeleting = false;
+
+        function typeLoop() {
+            if (!typewriterEl) return;
+            const current = phrases[pIdx];
+            typewriterEl.textContent = isDeleting ? current.substring(0, cIdx - 1) : current.substring(0, cIdx + 1);
+            cIdx = isDeleting ? cIdx - 1 : cIdx + 1;
+
+            let speed = isDeleting ? 30 : 70;
+
+            if (!isDeleting && cIdx === current.length) {
+                speed = 2200;
+                isDeleting = true;
+            } else if (isDeleting && cIdx === 0) {
+                isDeleting = false;
+                pIdx = (pIdx + 1) % phrases.length;
+                speed = 400;
+            }
+
+            setTimeout(typeLoop, speed);
+        }
+
+        /* Reading Progress Indicator */
+        window.addEventListener('scroll', () => {
+            const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (window.scrollY / totalHeight) * 100;
+            const progBar = document.getElementById('scrollProgress');
+            if (progBar) progBar.style.width = `${progress}%`;
+        });
+
+        /* Timeline Filtering */
+        function filterTimeline(category) {
+            document.querySelectorAll('.tl-filter-btn').forEach(btn => {
+                btn.classList.remove('text-cyan-400', 'bg-slate-800', 'font-semibold');
+                btn.classList.add('text-slate-400');
+            });
+            const activeBtn = document.getElementById(`tl-btn-${category}`);
+            if (activeBtn) {
+                activeBtn.classList.add('text-cyan-400', 'bg-slate-800', 'font-semibold');
+                activeBtn.classList.remove('text-slate-400');
+            }
+
+            document.querySelectorAll('.tl-item').forEach(item => {
+                if (category === 'all' || item.dataset.category === category) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        /* Projects Filtering */
+        function filterProjects(category) {
+            document.querySelectorAll('.proj-filter-btn').forEach(btn => {
+                btn.classList.remove('text-cyan-400', 'border-cyan-500/40', 'bg-slate-900');
+                btn.classList.add('text-slate-400');
+            });
+            if (event && event.target) {
+                event.target.classList.add('text-cyan-400', 'border-cyan-500/40', 'bg-slate-900');
+                event.target.classList.remove('text-slate-400');
+            }
+
+            document.querySelectorAll('.project-item').forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        /* Certificate Modal Controls */
+        function openCertModal(title, issuer, validity, id, link) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalIssuer').textContent = `Issued by ${issuer}`;
+            document.getElementById('modalValidity').textContent = validity;
+            document.getElementById('modalID').textContent = id;
+            document.getElementById('modalLink').href = link;
+            document.getElementById('certModal').classList.remove('hidden');
+        }
+
+        function closeCertModal() {
+            document.getElementById('certModal').classList.add('hidden');
+        }
+
+        /* Code Snippet Modal Controls */
+        function openCodeTerminal(title, lang, code) {
+            document.getElementById('codeModalTitle').textContent = title;
+            document.getElementById('codeModalContent').textContent = code;
+            document.getElementById('codeModal').classList.remove('hidden');
+        }
+
+        function closeCodeModal() {
+            document.getElementById('codeModal').classList.add('hidden');
+        }
+
+        function copyCodeSnippet() {
+            const code = document.getElementById('codeModalContent').textContent;
+            navigator.clipboard.writeText(code);
+            showToast('Code copied to clipboard');
+        }
+
+        /* Toast Notifications */
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        /* Contact Form Handler */
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`;
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = `<i class="fas fa-check"></i> Transmission Sent`;
+                btn.classList.remove('from-cyan-500', 'via-blue-500', 'to-purple-600');
+                btn.classList.add('bg-emerald-500');
+                showToast('Thanks for reaching out!');
+                e.target.reset();
+            }, 1200);
+        }
+
+        function downloadResumePDF() {
+            showToast('Preparing PDF Print Dialog...');
+            window.print();
+        }
+
+        /* Mobile Drawer Toggle */
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileDrawer = document.getElementById('mobileDrawer');
+        if (mobileMenuBtn && mobileDrawer) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileDrawer.classList.toggle('hidden');
+            });
+
+            document.querySelectorAll('.mobile-link').forEach(link => {
+                link.addEventListener('click', () => mobileDrawer.classList.add('hidden'));
+            });
+        }
+
+        /* Window Initialization */
+        window.addEventListener('DOMContentLoaded', () => {
+            initCardTiltEffect();
+            typeLoop();
+        });
+    </script>
+</body>
+</html>
